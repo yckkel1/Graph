@@ -4,6 +4,7 @@ import java.util.*;
 public class UnionFind {
     final Map<Integer, Integer> root;
     boolean hasCycle = false;
+    int mst = 0;
 
     public UnionFind() {
         root = new HashMap<>();
@@ -14,16 +15,13 @@ public class UnionFind {
         for(int i=1; i<=n; i++) {
             root.put(i, i);
         }
-        for(int[] edge : edges) {
-            union(edge[0], edge[1]);
-        }
+
+        processEdges(edges);
     }
 
     public void addNode(int z, int[][] newEdges) {
         root.put(z, z);
-        for(int[] newEdge : newEdges) {
-            union(newEdge[0], newEdge[1]);
-        }
+        processEdges(newEdges);
     }
 
     public boolean isConnected(int x, int y) {
@@ -38,6 +36,21 @@ public class UnionFind {
         return hasCycle;
     }
 
+    public int processEdges(int[][] edges) {
+        PriorityQueue<int[]> edgesByAscendingWeights = new PriorityQueue<>(Comparator.comparingInt(edge -> edge[2]));
+        for(int[] edge : edges) {
+            edgesByAscendingWeights.offer(edge);
+        }
+
+        while(!edgesByAscendingWeights.isEmpty()) {
+            int[] curEdge = edgesByAscendingWeights.poll();
+            int u = curEdge[0], v = curEdge[1], weight = curEdge[2];
+            union(u, v, weight);
+        }
+
+        return mst;
+    }
+
     private int find(int v) {
         if(root.get(v) != v) {
             root.put(v, find(root.get(v)));
@@ -45,7 +58,7 @@ public class UnionFind {
         return root.get(v);
     }
 
-    private void union(int x, int y) {
+    private void union(int x, int y, int weight) {
         int rootX = find(x);
         int rootY = find(y);
         if(rootX == rootY) {
@@ -55,6 +68,7 @@ public class UnionFind {
 
         if(rootX != rootY) {
             root.put(rootX, rootY);
+            mst += weight;
         }
     }
 }
